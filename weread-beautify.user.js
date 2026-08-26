@@ -25,6 +25,15 @@
     .readerTopBar {
       max-width: var(--wr-format-width, none) !important;
     }
+    /* 下滑自动隐藏 header，上滑恢复 */
+    html.wr-header-hide .readerTopBar {
+      transform: translateY(-100%) !important;
+      transition: transform .25s ease !important;
+    }
+    html:not(.wr-header-hide) .readerTopBar {
+      transform: translateY(0) !important;
+      transition: transform .25s ease !important;
+    }
     /* 右侧工具条右边缘对齐 header 头像 */
     .readerControls {
       left: auto !important;
@@ -172,6 +181,22 @@
   document.addEventListener('scroll', () => { updateProgress(); showMeter(); }, { passive: true });
   window.addEventListener('resize', updateProgress);
   updateProgress();
+
+  // ===== 下滑隐藏 header，上滑显示 header =====
+  let lastScrollY = window.scrollY;
+  let headerHidden = false;
+  document.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    const dy = y - lastScrollY;
+    if (Math.abs(dy) > 8) {
+      const hide = dy > 0 && y > 80; // 往下滚且离开顶部才隐藏
+      if (hide !== headerHidden) {
+        headerHidden = hide;
+        document.documentElement.classList.toggle('wr-header-hide', hide);
+      }
+    }
+    lastScrollY = y;
+  }, { passive: true });
 
   // ===== 右侧工具条：栏宽滑块（类似字号滑块） =====
   function buildWidthControl() {
